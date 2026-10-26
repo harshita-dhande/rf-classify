@@ -10,7 +10,7 @@ fprintf('=================================================================\n\n')
 
 % 1. Setup paths
 [scriptDir, ~, ~] = fileparts(mfilename('fullpath'));
-projectRoot = fullfile(scriptDir, '..');
+[projectRoot, ~, ~] = fileparts(scriptDir);
 run(fullfile(scriptDir, 'setup', 'setup.m'));
 
 % 2. Run Inference on a Sample Input

@@ -13,8 +13,12 @@ function setup()
     % 1. Determine Project Root Directory
     setupFilePath = mfilename('fullpath');
     [setupDir, ~, ~] = fileparts(setupFilePath);
-    projectRoot = fullfile(setupDir, '..', '..');
-    projectRoot = char(matlab.io.internal.utility.resolvePath(projectRoot));
+    % Navigate two levels up: matlab/setup -> matlab -> projectRoot
+    [matlabDir, ~, ~] = fileparts(setupDir);
+    [projectRoot, ~, ~] = fileparts(matlabDir);
+    if isempty(projectRoot) || ~exist(projectRoot, 'dir')
+        projectRoot = pwd;
+    end
 
     fprintf('[INFO] Project Root: %s\n', projectRoot);
 
