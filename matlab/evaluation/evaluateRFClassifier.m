@@ -29,7 +29,7 @@ function evalSummary = evaluateRFClassifier(modelPath, datasetPath, resultsDir)
         if isempty(datasetPath)
             datasetPath = fullfile('data', 'rf_dataset_smoke.mat');
         end
-    elseif ~exist(datasetPath, 'file')
+    elseif (ischar(datasetPath) || isstring(datasetPath)) && ~exist(datasetPath, 'file')
         foundData = which(datasetPath);
         if ~isempty(foundData)
             datasetPath = foundData;
@@ -49,15 +49,37 @@ function evalSummary = evaluateRFClassifier(modelPath, datasetPath, resultsDir)
     if ~exist(snrDir, 'dir'),     mkdir(snrDir);     end
 
     % 1. Load Model & Dataset
-    if ~exist(modelPath, 'file')
-        error('Model file %s does not exist.', modelPath);
-    end
-    if ~exist(datasetPath, 'file')
-        error('Dataset file %s does not exist. Run generateDataset first.', datasetPath);
+    if ischar(modelPath) || isstring(modelPath)
+        if ~exist(modelPath, 'file')
+            foundPath = which(modelPath);
+            if ~isempty(foundPath)
+                modelPath = foundPath;
+            else
+                error('Model file %s does not exist.', modelPath);
+            end
+        end
+        m = load(modelPath);
+        modelName = char(modelPath);
+    else
+        m = modelPath;
+        modelName = 'In-Memory Model';
     end
 
-    m = load(modelPath);
-    d = load(datasetPath);
+    if isstruct(datasetPath)
+        d = datasetPath;
+        datasetName = 'In-Memory Dataset';
+    else
+        if ~exist(datasetPath, 'file')
+            foundData = which(datasetPath);
+            if ~isempty(foundData)
+                datasetPath = foundData;
+            else
+                error('Dataset file %s does not exist. Run generateDataset first.', datasetPath);
+            end
+        end
+        d = load(datasetPath);
+        datasetName = char(datasetPath);
+    end
 
     X = d.X_stft; % [32 x 33 x 1 x N]
     Y = d.Y;      % [N x 5]
@@ -69,8 +91,8 @@ function evalSummary = evaluateRFClassifier(modelPath, datasetPath, resultsDir)
     numClasses = length(classNames);
 
     fprintf('\n================ EVALUATING RF CLASSIFIER ================\n');
-    fprintf(' Model:   %s\n', modelPath);
-    fprintf(' Dataset: %s (Total Samples: %d)\n', datasetPath, N);
+    fprintf(' Model:   %s\n', modelName);
+    fprintf(' Dataset: %s (Total Samples: %d)\n', datasetName, N);
     fprintf('----------------------------------------------------------\n');
 
     % 2. Forward Inference

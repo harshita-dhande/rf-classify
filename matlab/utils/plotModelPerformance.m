@@ -8,9 +8,19 @@ function fig = plotModelPerformance(evalSummary)
     if nargin < 1 || isempty(evalSummary)
         % Run quick evaluation if summary not provided
         modelFile = which('trainedNetwork.mat');
+        if isempty(modelFile)
+            modelFile = fullfile('models', 'trainedNetwork.mat');
+        end
         dataFile  = which('rf_dataset_smoke.mat');
         if isempty(dataFile)
-            dataFile = generateDataset('smoke', 'data', 42);
+            dataFile = fullfile('data', 'rf_dataset_smoke.mat');
+            if ~exist(dataFile, 'file')
+                [dStruct, ~] = generateDataset('smoke', 'data', 42);
+                dataFile = which('rf_dataset_smoke.mat');
+                if isempty(dataFile)
+                    dataFile = dStruct;
+                end
+            end
         end
         evalSummary = evaluateRFClassifier(modelFile, dataFile);
     end
