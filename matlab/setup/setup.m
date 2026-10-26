@@ -83,7 +83,7 @@ function setup()
     if exist(modelPath, 'file')
         fprintf('[INFO] Pretrained model found at: %s\n', modelPath);
         try
-            modelInfo = load(modelPath, 'net', 'classNames', 'inputSize');
+            modelInfo = load(modelPath);
             if isfield(modelInfo, 'classNames')
                 fprintf('       Classes: %s\n', strjoin(modelInfo.classNames, ', '));
             end

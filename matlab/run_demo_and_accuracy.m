@@ -29,7 +29,11 @@ fprintf('First 3 Raw I/Q Samples: (I=%+.4f, Q=%+.4f), (I=%+.4f, Q=%+.4f), (I=%+.
     real(iq(1)), imag(iq(1)), real(iq(2)), imag(iq(2)), real(iq(3)), imag(iq(3)));
 
 % Execute forward inference
-[results, activeProtocols, probs] = runInference(sampleFile);
+modelFile = fullfile(projectRoot, 'models', 'trainedNetwork.mat');
+if ~exist(modelFile, 'file')
+    modelFile = which('trainedNetwork.mat');
+end
+[results, activeProtocols, probs] = runInference(sampleFile, modelFile);
 
 % 3. Evaluate Dataset Accuracy
 fprintf('\n---------------- STEP 2: MODEL ACCURACY EVALUATION --------------\n');

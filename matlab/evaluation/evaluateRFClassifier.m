@@ -13,11 +13,29 @@ function evalSummary = evaluateRFClassifier(modelPath, datasetPath, resultsDir)
 %   Part of the "Classify RF Signals Using AI" challenge submission.
 
     if nargin < 1 || isempty(modelPath)
-        modelPath = fullfile('models', 'trainedNetwork.mat');
+        modelPath = which('trainedNetwork.mat');
+        if isempty(modelPath)
+            modelPath = fullfile('models', 'trainedNetwork.mat');
+        end
+    elseif ~exist(modelPath, 'file')
+        foundPath = which(modelPath);
+        if ~isempty(foundPath)
+            modelPath = foundPath;
+        end
     end
+
     if nargin < 2 || isempty(datasetPath)
-        datasetPath = fullfile('data', 'rf_dataset_smoke.mat');
+        datasetPath = which('rf_dataset_smoke.mat');
+        if isempty(datasetPath)
+            datasetPath = fullfile('data', 'rf_dataset_smoke.mat');
+        end
+    elseif ~exist(datasetPath, 'file')
+        foundData = which(datasetPath);
+        if ~isempty(foundData)
+            datasetPath = foundData;
+        end
     end
+
     if nargin < 3 || isempty(resultsDir)
         resultsDir = 'results';
     end
@@ -56,11 +74,18 @@ function evalSummary = evaluateRFClassifier(modelPath, datasetPath, resultsDir)
     fprintf('----------------------------------------------------------\n');
 
     % 2. Forward Inference
-    dlX = dlarray(X, 'SSCB');
-    try
-        rawOut = forward(m.net, dlX);
-        probs = double(extractdata(rawOut)).'; % [N x 5]
-    catch
+    probs = [];
+    if isfield(m, 'net') && isa(m.net, 'dlnetwork')
+        try
+            dlX = dlarray(X, 'SSCB');
+            rawOut = forward(m.net, dlX);
+            probs = double(extractdata(rawOut)).'; % [N x 5]
+        catch
+            probs = [];
+        end
+    end
+
+    if isempty(probs)
         % Fallback for direct evaluation
         probs = zeros(N, numClasses);
         for i = 1:N
